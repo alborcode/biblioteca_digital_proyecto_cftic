@@ -87,10 +87,6 @@ class BusquedaTituloState extends State<BusquedaTitulo> {
                   getLibrosTitulo(busquedaController.text);
                   _busquedaFocus.unfocus();
                   _reset();
-                  /*if (data == null) {
-                    mensajeStatus = 'No se han encontrados datos para la busqueda';
-                    mensaje(context, mensajeStatus);
-                  }*/
                 },
                 icono: Icons.search,
                 texto: 'Buscar',
@@ -222,8 +218,13 @@ class BusquedaTituloState extends State<BusquedaTitulo> {
     urlapi = "$urlbuscar$filtro";
     // Para poder usar await el metodo tiene que ser asincrono en el Future
     var res = await http.get(Uri.parse(urlapi), headers: {"Accept": "application/json"});
+
+    int statusCode = res.statusCode;
+    if (statusCode != 200){
+      mensaje(context, 'No hay datos a mostrar');
+    }
+
     // Entrara en SetState cuando haya obtenido los resultados
-    //listado();
     setState(() {
       data = json.decode(res.body);
       //var resBody = json.decode(res.body);

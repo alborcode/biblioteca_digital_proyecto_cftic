@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 void mensaje(BuildContext context, String text) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Center(child: Text(text)),
+      content: SizedBox(
+          height: 15,
+          child: Center(child: Text(text))),
     ),
   );
 }

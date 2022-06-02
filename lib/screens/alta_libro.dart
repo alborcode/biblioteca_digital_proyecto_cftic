@@ -21,6 +21,7 @@ import 'package:image_picker/image_picker.dart';
 
 // Importamos Widgets personalizados
 import 'package:biblioteca_digital_proyecto_cftic/widgets/widgets.dart';
+import 'package:path_provider/path_provider.dart';
 
 class AltaLibro extends StatefulWidget {
   // Se define ruta de PantallaLoginEmail
@@ -208,12 +209,15 @@ class AltaLibroState extends State<AltaLibro> {
                         // Añado margenes entre botones y con respecto a la caja
                         padding:
                             const EdgeInsets.only(top: 10, left: 10, right: 10),
-                        child: BotonIcono(
-                          accion: () {
-                            //_uploadFile(); //---------------------------------------------
-                          },
-                          icono: Icons.start,
-                          texto: 'Alta libro',
+                        child: AbsorbPointer(
+                          absorbing: true,
+                          child: BotonIcono(
+                            accion: () {
+                              //_uploadFile(); //---------------------------------------------
+                            },
+                            icono: Icons.start,
+                            texto: 'Alta libro',
+                          ),
                         ),
                       ),
                     ],
@@ -225,14 +229,28 @@ class AltaLibroState extends State<AltaLibro> {
   }
 
   // Generamos en Lista los elementos del menu desplegable
-  List<DropdownMenuItem<String>> get elementosLista {
+  List<DropdownMenuItem<String>> get elementosLista{
     List<DropdownMenuItem<String>> menuItems = [
       const DropdownMenuItem(
-          value: 'Programacion', child: Text('Programación')),
-      const DropdownMenuItem(value: 'Sistemas', child: Text('Sistemas')),
+          value: 'Programacion',
+          child: Text('Programación')
+      ),
       const DropdownMenuItem(
-          value: 'Ciberseguridad', child: Text('Ciberseguridad')),
-      const DropdownMenuItem(value: 'Ofimatica', child: Text('Ofimatica')),
+          value: 'Sistemas',
+          child: Text('Sistemas')
+      ),
+      const DropdownMenuItem(
+          value: 'Ciberseguridad',
+          child: Text('Ciberseguridad')
+      ),
+      const DropdownMenuItem(
+          value: 'Bases_Datos',
+          child: Text('Bases de Datos')
+      ),
+      const DropdownMenuItem(
+          value: 'Web',
+          child: Text('Web')
+      ),
     ];
     return menuItems;
   }
@@ -261,22 +279,12 @@ class AltaLibroState extends State<AltaLibro> {
       //icon: const Icon(Icons.flag),
       value: valorseleccionado,
       items: elementosLista,
-      onChanged: (String? nuevovalor) {
+      onChanged: (String? nuevovalor){
         setState(() {
           valorseleccionado = nuevovalor!;
         });
       },
     );
-  }
-
-  imageFile() async {
-    //final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    final path = await FlutterDocumentPicker.openDocument();
-    setState(() {
-      filePath = path;
-      //fileName = file.name.toString();
-      fileName = File(path!);
-    });
   }
 
   /*_uploadFile() {
@@ -317,6 +325,16 @@ class AltaLibroState extends State<AltaLibro> {
       });
     });
   }*/
+
+  imageFile() async {
+    //final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final path = await FlutterDocumentPicker.openDocument();
+    setState(() {
+      filePath = path;
+      //fileName = file.name.toString();
+      fileName = File(path!);
+    });
+  }
 
   imagePicker() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -367,6 +385,7 @@ class AltaLibroState extends State<AltaLibro> {
     });
   }
 
+  // Funcion para Insert en Base de Datos
   Future<HttpClientResponse?> altaRegistro(tituloinsert, autorinsert,
       tematicainsert, urlinsert, imageninsert) async {
     final url = Uri.parse(urlinsertar);

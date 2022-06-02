@@ -281,7 +281,6 @@ class BusquedaTematicaState extends State<BusquedaTematica> {
       mensaje(context, 'No hay datos a mostrar');
     }
     // Entrara en SetState cuando haya obtenido los resultados
-    //listado();
 
     setState(() {
       data = json.decode(res.body);

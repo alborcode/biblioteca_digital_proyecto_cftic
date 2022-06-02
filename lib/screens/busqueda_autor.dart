@@ -1,19 +1,22 @@
-//import 'dart:html';
 
-//import 'dart:html';
-
+import 'package:dio/dio.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+
+// Importar libreria para acceso documentos locales
+import 'package:path_provider/path_provider.dart';
+
+import 'dart:io';
 
 // Importacion de Pantallas
 import 'package:biblioteca_digital_proyecto_cftic/screens/screens.dart';
 
 // Importamos Widgets personalizados
 import 'package:biblioteca_digital_proyecto_cftic/widgets/widgets.dart';
-import 'package:path_provider/path_provider.dart';
 
 
 class BusquedaAutor extends StatefulWidget {
@@ -27,6 +30,17 @@ class BusquedaAutor extends StatefulWidget {
 class BusquedaAutorState extends State<BusquedaAutor> {
   final TextEditingController busquedaController = TextEditingController();
 
+  late Future<ListResult> futureFiles;
+  // Map<int, double> downloadProgress = {};
+  double downloadProgress = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Instancia de los ficheros en libros
+    futureFiles = FirebaseStorage.instance.ref('/libros').listAll();
+  }
+
   // Funcion para vaciar controladores
   void _reset() {
     busquedaController.clear();
@@ -38,16 +52,16 @@ class BusquedaAutorState extends State<BusquedaAutor> {
   //final String urlbuscar = "https://apibiblioteca.azurewebsites.net/biblioteca/GetAutor/";
   final String urlbuscar = "https://apibiblioteca.azurewebsites.net/biblioteca/GetAutores/";
   String urlapi = "";
-
   // La variable data recupera los datos del webapi en una lista o coleccion
   List? data;
-
   String mensajeStatus = "";
+
+  String nombrefichero = "";
 
   // Create a reference from an HTTPS URL Note that in the URL, characters are URL escaped!
 
   // Create a storage reference from our app
-  final storageRef = FirebaseStorage.instance.ref('/Image').listAll();
+  final storageRef = FirebaseStorage.instance.ref('/libros').listAll();
 
   //final httpsReference = FirebaseStorage.instance.refFromURL(
   // "https://firebasestorage.googleapis.com/b/YOUR_BUCKET/o/images%20stars.jpg");
@@ -125,7 +139,6 @@ class BusquedaAutorState extends State<BusquedaAutor> {
     );
   }
 
-
   ListView listado() {
     return ListView.builder(
       // El numero de elementos será la longitud de la lista data
@@ -192,7 +205,8 @@ class BusquedaAutorState extends State<BusquedaAutor> {
                                     splashColor: Colors.brown,
                                     // Al presionar en boton muestra dialogo de descarga
                                     onPressed: () {
-                                      ventanaDescarga(context);
+                                      nombrefichero = data![index]["urlDescarga"];
+                                      ventanaDescarga(context, nombrefichero);
                                     }
                                 )
                             )
@@ -212,94 +226,89 @@ class BusquedaAutorState extends State<BusquedaAutor> {
     );
   }
 
-  void ventanaDescarga(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (ctx) =>
-            AlertaDialogo(
-                titulo: "Descargar",
-                texto: "Pulse boton descargar para descargar este libro a su dispositivo",
-                textoBoton1: "Descargar",
-                textoBoton2: "Cancelar",
-                // Accion de Descarga
-                accion: () async {
-                  /*final httpsReference = FirebaseStorage.instance.refFromURL(
-                data![index]["urlDescarga"]);
-            // Llamada a url guarda para descargar
-            //final islandRef = storageRef.child("images/island.jpg");
-
-            final appDocDir = await getApplicationDocumentsDirectory();
-            final filePath = "${appDocDir.absolute}/image/island.jpg";
-            final file = File(filePath);
-            //final file = File(httpsReference)
-
-            final downloadTask = httpsReference.writeToFile(file);
-            downloadTask.snapshotEvents.listen((taskSnapshot) {
-              switch (taskSnapshot.state) {
-                case TaskState.running:
-                // TODO: Handle this case.
-                  break;
-                case TaskState.paused:
-                // TODO: Handle this case.
-                  break;
-                case TaskState.success:
-                // TODO: Handle this case.
-                  break;
-                case TaskState.canceled:
-                // TODO: Handle this case.
-                  break;
-                case TaskState.error:
-                // TODO: Handle this case.
-                  break;*/
-                  //_donwloadFile(file);
-                }
-            )
-    );
+  void ventanaDescarga(BuildContext context, nombrefichero) {
+    showDialog
+      (context: context,
+        builder: (ctx) => AlertaDialogo(
+            titulo: "Descargar",
+            texto: "Pulse boton descargar para descargar este libro a su dispositivo",
+            textoBoton1: "Descargar",
+            textoBoton2: "Cancelar",
+            // Accion de Descarga
+            accion: () async {
+              //donwloadFile(nombrefichero);
+              donwloadFileURL(nombrefichero);
+            }
+        )
+      );
   }
 
-
-// Generamos con Future funcion asincrona getDoctoresData
-// Tipo Future que devolvera un String (al ser consulta)
-Future<String> getLibrosAutor(String filtro) async {
-  urlapi = "$urlbuscar$filtro";
-  // Para poder usar await el metodo tiene que ser asincrono en el Future
-  var res = await http.get(
-      Uri.parse(urlapi), headers: {"Accept": "application/json"});
-
-  int statusCode = res.statusCode;
-  if (statusCode != 200){
-    mensaje(context, 'No hay datos a mostrar');
-  }
-
-  // Entrara en SetState cuando haya obtenido los resultados
-  //listado();
-  setState(() {
-    data = json.decode(res.body);
-    //var resBody = json.decode(res.body);
-    // resBody["titulo"];
-    // resBody["Autor"];
-    // resBody["Teamtica"];
-
-    // Deserializamos el body del Json en String
-    // var resBody = json.decode(res.body);
-    // Se vuelca en la lista el array de results
-    // data = resBody["Empleados"];
-    // Se recoge sin variable
-
-  });
-  return "Realizado!";
-}
-
- /* Future _donwloadFile(Reference ref) async {
+  Future<void> donwloadFile(Reference ref) async {
+    final nombrelibro = nombrefichero;
+    // URL no visible ficheros solo se pueden ver en APP
     final dir = await getApplicationDocumentsDirectory();
-    final filepath = "${dir}/image/";
-    final file = File('${dir.path}/${ref.name}');
-    //final file = File(data![index]["urlDescarga"]);
+    final fichero = File("${dir.path}${ref.name}");
+    // File filepath = File ("/libros/$nombrelibro");
 
-    await ref.writeToFile(file);
+    await ref.writeToFile(fichero);
+    mensaje(context, 'Descargado ${ref.name}');
+  }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Downloaded ${ref.name}')));
-  }*/
+  Future<void> donwloadFileURL(Reference ref) async {
+    final nombrelibroURL = nombrefichero;
+    final url = await ref.getDownloadURL();
+
+    final tempdir = await getTemporaryDirectory();
+    final path = "${tempdir.path}${ref.name}";
+
+    await Dio().download(
+        url,
+        path,
+        onReceiveProgress: (received, total){
+          double progress = received / total;
+          setState((){
+            downloadProgress = progress;
+            mensajeProgreso(context, nombrelibroURL, downloadProgress);
+          });
+        }
+    );
+
+    if (url.contains('.mp4')){
+      await GallerySaver.saveVideo(path, toDcim: true);
+    }else if (url.contains('.jpg')){
+      await GallerySaver.saveImage(path, toDcim: true);
+    }
+
+  }
+
+  // Generamos con Future funcion asincrona getLibrosAutor de consulta
+  Future<String> getLibrosAutor(String filtro) async {
+    urlapi = "$urlbuscar$filtro";
+    // Para poder usar await el metodo tiene que ser asincrono en el Future
+    var res = await http.get(
+        Uri.parse(urlapi), headers: {"Accept": "application/json"});
+
+    int statusCode = res.statusCode;
+    if (statusCode != 200){
+      mensaje(context, 'No hay datos a mostrar');
+    }
+
+    // Entrara en SetState cuando haya obtenido los resultados
+    setState(() {
+      data = json.decode(res.body);
+      //var resBody = json.decode(res.body);
+      // resBody["titulo"];
+      // resBody["Autor"];
+      // resBody["Teamtica"];
+
+      // Deserializamos el body del Json en String
+      // var resBody = json.decode(res.body);
+      // Se vuelca en la lista el array de results
+      // data = resBody["Empleados"];
+      // Se recoge sin variable
+
+    });
+    return "Realizado!";
+  }
 
 }

@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
 
 // Al no ser nombre de clase por convencion va en minuscula
-void mensaje(BuildContext context, String text) {
+void mensajeProgreso(BuildContext context, String filename, double progress) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: SizedBox(
-          height: 15,
-          child: Center(child: Text(text))),
-    ),
+      content: ListTile(
+        title: Text(filename),
+        subtitle: progress != null
+          ? LinearProgressIndicator(
+                value: progress,
+              backgroundColor: Colors.brown,
+            )
+          : null,
+        /*trailing: IconButton(
+          icon: const Icon(
+            Icons.download,
+            color: Colors.black,
+          ),
+          onPressed: () => donwloadFileURL(file),
+        ),*/
+      )
+    )
   );
 }
