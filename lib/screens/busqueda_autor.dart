@@ -105,11 +105,6 @@ class BusquedaAutorState extends State<BusquedaAutor> {
                         getLibrosAutor(busquedaController.text);
                         _busquedaFocus.unfocus();
                         _reset();
-                        if (data == null) {
-                          mensajeStatus =
-                          'No se han encontrados datos para la busqueda';
-                          mensaje(context, mensajeStatus);
-                        }
                       },
                       icono: Icons.search,
                       texto: 'Buscar',
@@ -197,48 +192,7 @@ class BusquedaAutorState extends State<BusquedaAutor> {
                                     splashColor: Colors.brown,
                                     // Al presionar en boton muestra dialogo de descarga
                                     onPressed: () {
-                                      showDialog(
-                                          context: context,
-                                          builder: (ctx) =>
-                                              AlertaDialogo(
-                                                  titulo: "Descargar",
-                                                  texto: "Pulse boton descargar para descargar este libro a su dispositivo",
-                                                  textoBoton1: "Descargar",
-                                                  textoBoton2: "Cancelar",
-                                                  // Accion de Descarga
-                                                  accion: () async {
-                                                    /*final httpsReference = FirebaseStorage.instance.refFromURL(
-                                                  data![index]["urlDescarga"]);
-                                              // Llamada a url guarda para descargar
-                                              //final islandRef = storageRef.child("images/island.jpg");
-
-                                              final appDocDir = await getApplicationDocumentsDirectory();
-                                              final filePath = "${appDocDir.absolute}/image/island.jpg";
-                                              final file = File(filePath);
-                                              //final file = File(httpsReference)
-
-                                              final downloadTask = httpsReference.writeToFile(file);
-                                              downloadTask.snapshotEvents.listen((taskSnapshot) {
-                                                switch (taskSnapshot.state) {
-                                                  case TaskState.running:
-                                                  // TODO: Handle this case.
-                                                    break;
-                                                  case TaskState.paused:
-                                                  // TODO: Handle this case.
-                                                    break;
-                                                  case TaskState.success:
-                                                  // TODO: Handle this case.
-                                                    break;
-                                                  case TaskState.canceled:
-                                                  // TODO: Handle this case.
-                                                    break;
-                                                  case TaskState.error:
-                                                  // TODO: Handle this case.
-                                                    break;*/
-                                                    //_donwloadFile(file);
-                                                  }
-                                              )
-                                      );
+                                      ventanaDescarga(context);
                                     }
                                 )
                             )
@@ -258,6 +212,50 @@ class BusquedaAutorState extends State<BusquedaAutor> {
     );
   }
 
+  void ventanaDescarga(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (ctx) =>
+            AlertaDialogo(
+                titulo: "Descargar",
+                texto: "Pulse boton descargar para descargar este libro a su dispositivo",
+                textoBoton1: "Descargar",
+                textoBoton2: "Cancelar",
+                // Accion de Descarga
+                accion: () async {
+                  /*final httpsReference = FirebaseStorage.instance.refFromURL(
+                data![index]["urlDescarga"]);
+            // Llamada a url guarda para descargar
+            //final islandRef = storageRef.child("images/island.jpg");
+
+            final appDocDir = await getApplicationDocumentsDirectory();
+            final filePath = "${appDocDir.absolute}/image/island.jpg";
+            final file = File(filePath);
+            //final file = File(httpsReference)
+
+            final downloadTask = httpsReference.writeToFile(file);
+            downloadTask.snapshotEvents.listen((taskSnapshot) {
+              switch (taskSnapshot.state) {
+                case TaskState.running:
+                // TODO: Handle this case.
+                  break;
+                case TaskState.paused:
+                // TODO: Handle this case.
+                  break;
+                case TaskState.success:
+                // TODO: Handle this case.
+                  break;
+                case TaskState.canceled:
+                // TODO: Handle this case.
+                  break;
+                case TaskState.error:
+                // TODO: Handle this case.
+                  break;*/
+                  //_donwloadFile(file);
+                }
+            )
+    );
+  }
 
 
 // Generamos con Future funcion asincrona getDoctoresData
@@ -267,6 +265,12 @@ Future<String> getLibrosAutor(String filtro) async {
   // Para poder usar await el metodo tiene que ser asincrono en el Future
   var res = await http.get(
       Uri.parse(urlapi), headers: {"Accept": "application/json"});
+
+  int statusCode = res.statusCode;
+  if (statusCode != 200){
+    mensaje(context, 'No hay datos a mostrar');
+  }
+
   // Entrara en SetState cuando haya obtenido los resultados
   //listado();
   setState(() {

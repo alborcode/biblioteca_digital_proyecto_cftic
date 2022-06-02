@@ -1,29 +1,26 @@
 // https://www.youtube.com/watch?v=5F58y1YaRYs
 
+
+import 'package:flutter/material.dart';
+
+// Importamos librerias para control asincrono
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-//import 'package:faker/faker.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
-import 'package:flutter_document_picker/flutter_document_picker.dart';
-
-
-import 'package:biblioteca_digital_proyecto_cftic/services/autentificacion.dart';
-
-
 import 'dart:io';
 
-// Importacion de Pantallas
-import 'package:biblioteca_digital_proyecto_cftic/screens/screens.dart';
+// Importar Libreria para acceso a API
+import 'package:http/http.dart';
+
+// Importar Librerias Firebase
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+
+// Importar Libreria para seleccion ficheros y upload
+import 'package:flutter_document_picker/flutter_document_picker.dart';
+import 'package:image_picker/image_picker.dart';
+
 // Importamos Widgets personalizados
 import 'package:biblioteca_digital_proyecto_cftic/widgets/widgets.dart';
-import 'package:biblioteca_digital_proyecto_cftic/models/libro.dart';
 
 class AltaLibro extends StatefulWidget {
   // Se define ruta de PantallaLoginEmail
@@ -34,13 +31,16 @@ class AltaLibro extends StatefulWidget {
 }
 
 class AltaLibroState extends State<AltaLibro> {
+  // Definicion de Controladores de Cajas de Texto
   final TextEditingController tituloController = TextEditingController();
   final TextEditingController autorController = TextEditingController();
   final TextEditingController urlController = TextEditingController();
   final TextEditingController portadaController = TextEditingController();
+  // Definicion de Control Dropdown
   final _dropdownFormKey = GlobalKey<FormState>();
 
-  final String urlinsertar = "https://apibiblioteca.azurewebsites.net/biblioteca/";
+  final String urlinsertar =
+      "https://apibiblioteca.azurewebsites.net/biblioteca/";
   String urlapi = "";
 
   String imageName = "";
@@ -66,134 +66,160 @@ class AltaLibroState extends State<AltaLibro> {
     return Scaffold(
       appBar: AppBar(
           centerTitle: true,
-          title: const Text('BIBLIOTECA ONLINE',
+          title: const Text(
+            'BIBLIOTECA ONLINE',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios),
               onPressed: () {
                 Navigator.pop(context);
-              }
-          )
-      ),
+              })),
       endDrawer: const MenuLateral(),
       body: SingleChildScrollView(
-        child: _isLoading ? const Center(
-            child: CircularProgressIndicator(strokeWidth: 4.0,
-              backgroundColor: Colors.grey,
-              color: Colors.brown,)) : Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Texto de Pantalla
-            const Padding(
-              padding: EdgeInsets.only(top: 30.0),
-              child: Text(
-                "Alta de Libro",
-                style: TextStyle(fontSize: 30),
-              ),
-            ),
-            Padding(
-              // Definimos margenes entre Titulo y primera caja
-              padding: const EdgeInsets.only(left: 10, top: 30, right: 10),
-              child: CajaTexto(
-                controller: tituloController,
-                hint: 'Introduce el Titulo del Libro',
-                icono: Icons.book,
-                nomostrar: false,
-                teclado: TextInputType.text,
-              ),
-            ),
-            Padding(
-              // Definimos margenes entre primera caja y segunda caja
-              padding: const EdgeInsets.only(left: 10, top: 20, right: 10),
-              child: CajaTexto(
-                  controller: autorController,
-                  hint: 'Introduce el Autor del Libro',
-                  icono: Icons.assignment_ind,
-                  nomostrar: false,
-                  teclado: TextInputType.text
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 10, top: 20, right: 10),
-              child: Form(
-                key: _dropdownFormKey,
-                child: Column(
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                strokeWidth: 4.0,
+                backgroundColor: Colors.grey,
+                color: Colors.brown,
+              ))
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Texto de Pantalla
+                  const Padding(
+                    padding: EdgeInsets.only(top: 30.0),
+                    child: Text(
+                      "Alta de Libro",
+                      style: TextStyle(fontSize: 30),
+                    ),
+                  ),
+                  Padding(
+                    // Definimos margenes entre Titulo y primera caja
+                    padding:
+                        const EdgeInsets.only(left: 10, top: 30, right: 10),
+                    child: CajaTexto(
+                      controller: tituloController,
+                      hint: 'Introduce el Titulo del Libro',
+                      icono: Icons.book,
+                      nomostrar: false,
+                      teclado: TextInputType.text,
+                    ),
+                  ),
+                  Padding(
+                    // Definimos margenes entre primera caja y segunda caja
+                    padding:
+                        const EdgeInsets.only(left: 10, top: 20, right: 10),
+                    child: CajaTexto(
+                        controller: autorController,
+                        hint: 'Introduce el Autor del Libro',
+                        icono: Icons.assignment_ind,
+                        nomostrar: false,
+                        teclado: TextInputType.text),
+                  ),
+                  Padding(
+                    padding:
+                        const EdgeInsets.only(left: 10, top: 20, right: 10),
+                    child: Form(
+                      key: _dropdownFormKey,
+                      child: Column(children: [
+                        // Llamo a Funcion Lista Desplegable
+                        listaDesplegable(),
+                      ]),
+                    ),
+                  ),
+                  Row(
+                    // Centra los elementos en la fila horizontalmente
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Llamo a Funcion Lista Desplegable
-                      listaDesplegable(),
-                    ]
-                ),
+           /*           Padding(
+                        // Añado margenes entre botones y con respecto a la caja
+                        padding:
+                            const EdgeInsets.only(top: 30, left: 10, right: 10),
+                        child: BotonIcono(
+                          accion: () {
+                            imagePicker();
+                          },
+                          icono: Icons.photo,
+                          texto: 'Seleccionar Portada',
+                        ),
+                      ),*/
+                      Padding(
+                        // Añado margenes entre botones y con respecto a la caja
+                        padding:
+                            const EdgeInsets.only(top: 30, left: 10, right: 10),
+                        child: BotonIconosinTexto(
+                          accion: () {
+                            imagePicker();
+                          },
+                          icono: Icons.photo,
+                        ),
+                      ),
+                      Padding(
+                        // Añado margenes entre botones y con respecto a la caja
+                        padding:
+                        const EdgeInsets.only(top: 30, left: 5, right: 5),
+                        child: BotonIconosinTexto(
+                          accion: () {
+                            imagePickerCamera();
+                          },
+                          icono: Icons.photo_camera,
+                        ),
+                      ),
+                      Padding(
+                        // Añado margenes entre botones y con respecto a la caja
+                        padding:
+                            const EdgeInsets.only(top: 30, left: 5, right: 5),
+                        child: BotonIcono(
+                          accion: () {
+                            _uploadImage();
+                            String tituloinsert = tituloController.text;
+                            String autorinsert = autorController.text;
+                            String tematicainsert = valorseleccionado;
+                            String urlinsert = ""; //---------------------------------------------
+                            String imageninsert = uploadFileName;
+                            altaRegistro(tituloinsert, autorinsert,
+                                tematicainsert, urlinsert, imageninsert);
+                          },
+                          icono: Icons.photo_camera_back,
+                          texto: 'Subir portada',
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    // Centra los elementos en la fila horizontalmente
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        // Añado margenes entre botones y con respecto a la caja
+                        padding:
+                            const EdgeInsets.only(top: 10, left: 10, right: 10),
+                        child: BotonIcono(
+                          accion: () {
+                            // imagePicker(); //---------------------------------------------
+                          },
+                          icono: Icons.book,
+                          texto: 'Seleccionar libro',
+                        ),
+                      ),
+                      Padding(
+                        // Añado margenes entre botones y con respecto a la caja
+                        padding:
+                            const EdgeInsets.only(top: 10, left: 10, right: 10),
+                        child: BotonIcono(
+                          accion: () {
+                            //_uploadFile(); //---------------------------------------------
+                          },
+                          icono: Icons.start,
+                          texto: 'Alta libro',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ),
-            Row(
-              // Centra los elementos en la fila horizontalmente
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  // Añado margenes entre botones y con respecto a la caja
-                  padding: const EdgeInsets.only(top: 30, left: 10, right: 10),
-                  child: BotonIcono(
-                    accion: () {
-                      imagePicker();
-                    },
-                    icono: Icons.start,
-                    texto: 'Seleccionar portada',
-                  ),
-                ),
-                Padding(
-                  // Añado margenes entre botones y con respecto a la caja
-                  padding: const EdgeInsets.only(top: 30, left: 10, right: 10),
-                  child: BotonIcono(
-                    accion: () {
-                      _uploadImage();
-                      String tituloinsert = tituloController.text;
-                      String autorinsert = autorController.text;
-                      String tematicainsert = valorseleccionado;
-                      String urlinsert = ""; //---------------------------------------------
-                      String imageninsert = uploadFileName;
-                      altaRegistro(
-                          tituloinsert, autorinsert, tematicainsert, urlinsert,
-                          imageninsert);
-                    },
-                    icono: Icons.start,
-                    texto: 'Subir portada',
-                  ),
-                ),
-              ],
-            ),
-            Row(
-              // Centra los elementos en la fila horizontalmente
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Padding(
-                  // Añado margenes entre botones y con respecto a la caja
-                  padding: const EdgeInsets.only(top: 30, left: 10, right: 10),
-                  child: BotonIcono(
-                    accion: () {
-
-                     // imagePicker(); //---------------------------------------------
-                    },
-                    icono: Icons.start,
-                    texto: 'Seleccionar libro',
-                  ),
-                ),
-                Padding(
-                  // Añado margenes entre botones y con respecto a la caja
-                  padding: const EdgeInsets.only(top: 30, left: 10, right: 10),
-                  child: BotonIcono(
-                    accion: () {
-                     //_uploadFile(); //---------------------------------------------
-
-                    },
-                    icono: Icons.start,
-                    texto: 'Subir libro',
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -202,21 +228,11 @@ class AltaLibroState extends State<AltaLibro> {
   List<DropdownMenuItem<String>> get elementosLista {
     List<DropdownMenuItem<String>> menuItems = [
       const DropdownMenuItem(
-          value: 'Programacion',
-          child: Text('Programación')
-      ),
+          value: 'Programacion', child: Text('Programación')),
+      const DropdownMenuItem(value: 'Sistemas', child: Text('Sistemas')),
       const DropdownMenuItem(
-          value: 'Sistemas',
-          child: Text('Sistemas')
-      ),
-      const DropdownMenuItem(
-          value: 'Ciberseguridad',
-          child: Text('Ciberseguridad')
-      ),
-      const DropdownMenuItem(
-          value: 'Ofimatica',
-          child: Text('Ofimatica')
-      ),
+          value: 'Ciberseguridad', child: Text('Ciberseguridad')),
+      const DropdownMenuItem(value: 'Ofimatica', child: Text('Ofimatica')),
     ];
     return menuItems;
   }
@@ -253,16 +269,14 @@ class AltaLibroState extends State<AltaLibro> {
     );
   }
 
-
-
   imageFile() async {
     //final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     final path = await FlutterDocumentPicker.openDocument();
-      setState(() {
-        filePath = path;
-        //fileName = file.name.toString();
-        fileName = File(path!);
-      });
+    setState(() {
+      filePath = path;
+      //fileName = file.name.toString();
+      fileName = File(path!);
+    });
   }
 
   /*_uploadFile() {
@@ -310,7 +324,17 @@ class AltaLibroState extends State<AltaLibro> {
       setState(() {
         imagePath = image;
         imageName = image.name.toString();
+      });
+    }
+  }
 
+  imagePickerCamera() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      setState(() {
+        imagePath = pickedFile;
+        imageName = pickedFile.name.toString();
+        //imageName = File(pickedFile.path).toString();
       });
     }
   }
@@ -321,13 +345,9 @@ class AltaLibroState extends State<AltaLibro> {
     });
     var uniqueKey = firestoreRef.collection(collectionName);
 
-    uploadFileName =
-        DateTime
-            .now()
-            .millisecondsSinceEpoch
-            .toString() + ".jpg";
+    uploadFileName = DateTime.now().millisecondsSinceEpoch.toString() + ".jpg";
     Reference reference =
-    storageRef.ref().child(collectionName).child(uploadFileName);
+        storageRef.ref().child(collectionName).child(uploadFileName);
     UploadTask uploadTask = reference.putFile(File(imagePath!.path));
     uploadTask.snapshotEvents.listen((event) {
       print("${event.bytesTransferred}\t${event.totalBytes}");
@@ -347,11 +367,8 @@ class AltaLibroState extends State<AltaLibro> {
     });
   }
 
-  Future<HttpClientResponse?> altaRegistro(tituloinsert,
-      autorinsert,
-      tematicainsert,
-      urlinsert,
-      imageninsert) async {
+  Future<HttpClientResponse?> altaRegistro(tituloinsert, autorinsert,
+      tematicainsert, urlinsert, imageninsert) async {
     final url = Uri.parse(urlinsertar);
     final headers = {'Content-Type': 'application/json'};
     Map<String, dynamic> body = {
@@ -376,9 +393,11 @@ class AltaLibroState extends State<AltaLibro> {
 
     int statusCode = response.statusCode;
     if (statusCode == 200) {
-      print("Insercion realizada correctamente");
+      mensaje(context, 'Insercion realizada correctamente');
+      //print("Insercion realizada correctamente");
     } else {
-      print("Error en Post");
+      //print("Error en Post");
+      mensaje(context, 'Error en el Alta');
     }
 
     String responseBody = response.body;

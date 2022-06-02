@@ -19,7 +19,7 @@ class AppRoutes{
     '/Registro'       : (BuildContext contest) => const Registro(),
     '/Conexion'       : (BuildContext contest) => const Conexion(),
     '/Home'           : (BuildContext contest) => const Inicio(),
-    /*'/BuscarAutor'    : (BuildContext contest) => const BusquedaAutor(),*/
+    '/BuscarAutor'    : (BuildContext contest) => const BusquedaAutor(),
     '/BuscarTitulo'   : (BuildContext contest) => const BusquedaTitulo(),
     '/BuscarTematica' : (BuildContext contest) => const BusquedaTematica(),
     '/AltaLibro'      : (BuildContext contest) => const AltaLibro(),

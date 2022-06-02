@@ -84,10 +84,6 @@ class BusquedaTematicaState extends State<BusquedaTematica> {
                     accion: () {
                       //if (_dropdownFormKey.currentState!.validate()) {
                       getLibrosTematica(valorseleccionado);
-                      if (data == null) {
-                        mensajeStatus = 'No se han encontrados datos para la busqueda';
-                        mensaje(context, mensajeStatus);
-                      }
                       //Acciones si el desplegable es correcto
                       //}
                     },
@@ -279,6 +275,11 @@ class BusquedaTematicaState extends State<BusquedaTematica> {
     urlapi = "$urlbuscar$filtro";
     // Para poder usar await el metodo tiene que ser asincrono en el Future
     var res = await http.get(Uri.parse(urlapi), headers: {"Accept": "application/json"});
+
+    int statusCode = res.statusCode;
+    if (statusCode != 200){
+      mensaje(context, 'No hay datos a mostrar');
+    }
     // Entrara en SetState cuando haya obtenido los resultados
     //listado();
 
