@@ -1,6 +1,7 @@
 // https://www.youtube.com/watch?v=5F58y1YaRYs
 
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 // Importamos librerias para control asincrono
@@ -16,7 +17,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 // Importar Libreria para seleccion ficheros y upload
-import 'package:flutter_document_picker/flutter_document_picker.dart';
 import 'package:image_picker/image_picker.dart';
 
 // Importamos Widgets personalizados
@@ -49,13 +49,16 @@ class AltaLibroState extends State<AltaLibro> {
 
   var filePath;
   File? fileName;
+  UploadTask? task;
 
   final ImagePicker _picker = ImagePicker();
 
   FirebaseFirestore firestoreRef = FirebaseFirestore.instance;
   FirebaseStorage storageRef = FirebaseStorage.instance;
-  String collectionName = "libros";
+  String collectionNameFile = "libros";
+  String collectionNameImage = "portadas";
 
+  String uploadImageName = "";
   String uploadFileName = "";
 
   bool _isLoading = false;
@@ -175,13 +178,6 @@ class AltaLibroState extends State<AltaLibro> {
                         child: BotonIcono(
                           accion: () {
                             _uploadImage();
-                            String tituloinsert = tituloController.text;
-                            String autorinsert = autorController.text;
-                            String tematicainsert = valorseleccionado;
-                            String urlinsert = ""; //---------------------------------------------
-                            String imageninsert = uploadFileName;
-                            altaRegistro(tituloinsert, autorinsert,
-                                tematicainsert, urlinsert, imageninsert);
                           },
                           icono: Icons.photo_camera_back,
                           texto: 'Subir portada',
@@ -199,7 +195,7 @@ class AltaLibroState extends State<AltaLibro> {
                             const EdgeInsets.only(top: 10, left: 10, right: 10),
                         child: BotonIcono(
                           accion: () {
-                            // imagePicker(); //---------------------------------------------
+                            selectFile();
                           },
                           icono: Icons.book,
                           texto: 'Seleccionar libro',
@@ -209,15 +205,19 @@ class AltaLibroState extends State<AltaLibro> {
                         // Añado margenes entre botones y con respecto a la caja
                         padding:
                             const EdgeInsets.only(top: 10, left: 10, right: 10),
-                        child: AbsorbPointer(
-                          absorbing: true,
-                          child: BotonIcono(
-                            accion: () {
-                              //_uploadFile(); //---------------------------------------------
-                            },
-                            icono: Icons.start,
-                            texto: 'Alta libro',
-                          ),
+                        child: BotonIcono(
+                          accion: () {
+                            _uploadFile();
+                            String tituloinsert = tituloController.text;
+                            String autorinsert = autorController.text;
+                            String tematicainsert = valorseleccionado;
+                            String urlinsert = uploadFileName;
+                            String imageninsert = uploadImageName;
+                            altaRegistro(tituloinsert, autorinsert,
+                                tematicainsert, urlinsert, imageninsert);
+                          },
+                          icono: Icons.start,
+                          texto: 'Alta libro',
                         ),
                       ),
                     ],
@@ -226,6 +226,80 @@ class AltaLibroState extends State<AltaLibro> {
               ),
       ),
     );
+  }
+
+
+_uploadFile() {
+    setState(() {
+      _isLoading = true;
+    });
+    uploadFileName = DateTime
+        .now()
+        .millisecondsSinceEpoch
+        .toString() + ".pdf";
+    Reference reference =
+    storageRef.ref().child(collectionNameFile).child(uploadFileName);
+    UploadTask uploadTask = reference.putFile(File(filePath));
+    uploadTask.snapshotEvents.listen((event) {
+      print("${event.bytesTransferred}\t${event.totalBytes}");
+    });
+
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+
+  Future selectFile() async {
+    final result = await FilePicker.platform.pickFiles(allowMultiple: false);
+    if (result == null) return;
+    final path = result.files.single.path!;
+    setState(() {
+      filePath = path;
+      fileName = File(path);
+    });
+  }
+
+
+  imagePicker() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        imagePath = image;
+        imageName = image.name.toString();
+      });
+    }
+  }
+
+  imagePickerCamera() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      setState(() {
+        imagePath = pickedFile;
+        imageName = pickedFile.name.toString();
+        //imageName = File(pickedFile.path).toString();
+      });
+    }
+  }
+
+  _uploadImage() {
+    setState(() {
+      _isLoading = true;
+    });
+
+    uploadImageName = DateTime.now().millisecondsSinceEpoch.toString() + ".jpg";
+    Reference reference =
+        storageRef.ref().child(collectionNameImage).child(uploadImageName);
+    UploadTask uploadTask = reference.putFile(File(imagePath!.path));
+    uploadTask.snapshotEvents.listen((event) {
+      print("${event.bytesTransferred}\t${event.totalBytes}");
+    });
+
+    uploadTask.whenComplete(() async {
+      setState(() {
+        _isLoading = false;
+      });
+    });
   }
 
   // Generamos en Lista los elementos del menu desplegable
@@ -287,104 +361,6 @@ class AltaLibroState extends State<AltaLibro> {
     );
   }
 
-  /*_uploadFile() {
-    if (fileName == null){
-      print("No hay fichero");
-      return null;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    firebase_storage.UploadTask uploadTask;
-    var uniqueKey = firestoreRef.collection(collectionName);
-
-    uploadFileName =
-        DateTime
-            .now()
-            .millisecondsSinceEpoch
-            .toString() + ".jpg";
-    Reference reference =
-    storageRef.ref().child(collectionName).child(uploadFileName);
-    UploadTask uploadTask = reference.putFile(File(imagePath!.path));
-    uploadTask.snapshotEvents.listen((event) {
-      print("${event.bytesTransferred}\t${event.totalBytes}");
-    });
-
-    uploadTask.whenComplete(() async {
-      var uploadPath = await uploadTask.snapshot.ref.getDownloadURL();
-      firestoreRef.collection(collectionName).doc(uniqueKey.id).set({
-        "image": uploadPath,
-        "titulo": tituloController.text,
-        "autor": autorController.text,
-        "tematica": valorseleccionado
-      });
-      setState(() {
-        _isLoading = false;
-      });
-    });
-  }*/
-
-  imageFile() async {
-    //final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    final path = await FlutterDocumentPicker.openDocument();
-    setState(() {
-      filePath = path;
-      //fileName = file.name.toString();
-      fileName = File(path!);
-    });
-  }
-
-  imagePicker() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        imagePath = image;
-        imageName = image.name.toString();
-      });
-    }
-  }
-
-  imagePickerCamera() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
-    if (pickedFile != null) {
-      setState(() {
-        imagePath = pickedFile;
-        imageName = pickedFile.name.toString();
-        //imageName = File(pickedFile.path).toString();
-      });
-    }
-  }
-
-  _uploadImage() {
-    setState(() {
-      _isLoading = true;
-    });
-    var uniqueKey = firestoreRef.collection(collectionName);
-
-    uploadFileName = DateTime.now().millisecondsSinceEpoch.toString() + ".jpg";
-    Reference reference =
-        storageRef.ref().child(collectionName).child(uploadFileName);
-    UploadTask uploadTask = reference.putFile(File(imagePath!.path));
-    uploadTask.snapshotEvents.listen((event) {
-      print("${event.bytesTransferred}\t${event.totalBytes}");
-    });
-
-    uploadTask.whenComplete(() async {
-      var uploadPath = await uploadTask.snapshot.ref.getDownloadURL();
-      firestoreRef.collection(collectionName).doc(uniqueKey.id).set({
-        "image": uploadPath,
-        "titulo": tituloController.text,
-        "autor": autorController.text,
-        "tematica": valorseleccionado
-      });
-      setState(() {
-        _isLoading = false;
-      });
-    });
-  }
-
   // Funcion para Insert en Base de Datos
   Future<HttpClientResponse?> altaRegistro(tituloinsert, autorinsert,
       tematicainsert, urlinsert, imageninsert) async {
@@ -396,7 +372,7 @@ class AltaLibroState extends State<AltaLibro> {
       "titulo": tituloinsert,
       "autor": autorinsert,
       "tematica": tematicainsert,
-      "urlDescarga": "",
+      "urlDescarga": urlinsert,
       "imagenPortada": imageninsert
     };
     // Pasamos de Mapa a json

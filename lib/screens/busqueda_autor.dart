@@ -1,4 +1,6 @@
 
+import 'dart:ffi';
+
 import 'package:dio/dio.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -30,16 +32,6 @@ class BusquedaAutor extends StatefulWidget {
 class BusquedaAutorState extends State<BusquedaAutor> {
   final TextEditingController busquedaController = TextEditingController();
 
-  late Future<ListResult> futureFiles;
-  // Map<int, double> downloadProgress = {};
-  double downloadProgress = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    // Instancia de los ficheros en libros
-    futureFiles = FirebaseStorage.instance.ref('/libros').listAll();
-  }
 
   // Funcion para vaciar controladores
   void _reset() {
@@ -61,7 +53,7 @@ class BusquedaAutorState extends State<BusquedaAutor> {
   // Create a reference from an HTTPS URL Note that in the URL, characters are URL escaped!
 
   // Create a storage reference from our app
-  final storageRef = FirebaseStorage.instance.ref('/libros').listAll();
+  final storageRef = FirebaseStorage.instance.ref();
 
   //final httpsReference = FirebaseStorage.instance.refFromURL(
   // "https://firebasestorage.googleapis.com/b/YOUR_BUCKET/o/images%20stars.jpg");
@@ -237,24 +229,38 @@ class BusquedaAutorState extends State<BusquedaAutor> {
             // Accion de Descarga
             accion: () async {
               //donwloadFile(nombrefichero);
-              donwloadFileURL(nombrefichero);
+              final pathReference = storageRef.child("libros/$nombrefichero");
+              donwloadFile(pathReference);
             }
         )
       );
   }
 
-  Future<void> donwloadFile(Reference ref) async {
-    final nombrelibro = nombrefichero;
-    // URL no visible ficheros solo se pueden ver en APP
-    final dir = await getApplicationDocumentsDirectory();
-    final fichero = File("${dir.path}${ref.name}");
-    // File filepath = File ("/libros/$nombrelibro");
 
-    await ref.writeToFile(fichero);
-    mensaje(context, 'Descargado ${ref.name}');
+  Future<void> donwloadFile(Reference ref) async {
+//    final islandRef = storageRef.child("libros/$nombrefichero");
+    final appDocDir = await getApplicationDocumentsDirectory();
+    //final filePath = '${appDocDir.absolute}/libros/$nombrefichero';
+    final filePath = '${appDocDir.path}/libros/${ref.name}';
+    final file = File(filePath);
+    await ref.writeToFile(file);
+
+//    final downloadTask = islandRef.writeToFile(file);
+    //downloadTask.snapshotEvents.listen((taskSnapshot) {
+      /*switch (TaskSnapshot.state){
+        case TaskState.success:
+          print("Se ha descargado el archivo correctamente");
+          break;
+        case TaskState.error:
+          print("Error en la descarga");
+          break;
+        }*/
+    //});
+
+    //mensaje(context, 'Descargado ${ref.name}');
   }
 
-  Future<void> donwloadFileURL(Reference ref) async {
+  /*Future<void> donwloadFileURL(Reference ref) async {
     final nombrelibroURL = nombrefichero;
     final url = await ref.getDownloadURL();
 
@@ -279,7 +285,7 @@ class BusquedaAutorState extends State<BusquedaAutor> {
       await GallerySaver.saveImage(path, toDcim: true);
     }
 
-  }
+  }*/
 
   // Generamos con Future funcion asincrona getLibrosAutor de consulta
   Future<String> getLibrosAutor(String filtro) async {
@@ -296,17 +302,6 @@ class BusquedaAutorState extends State<BusquedaAutor> {
     // Entrara en SetState cuando haya obtenido los resultados
     setState(() {
       data = json.decode(res.body);
-      //var resBody = json.decode(res.body);
-      // resBody["titulo"];
-      // resBody["Autor"];
-      // resBody["Teamtica"];
-
-      // Deserializamos el body del Json en String
-      // var resBody = json.decode(res.body);
-      // Se vuelca en la lista el array de results
-      // data = resBody["Empleados"];
-      // Se recoge sin variable
-
     });
     return "Realizado!";
   }
