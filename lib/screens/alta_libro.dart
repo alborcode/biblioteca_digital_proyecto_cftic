@@ -21,7 +21,7 @@ import 'package:image_picker/image_picker.dart';
 
 // Importamos Widgets personalizados
 import 'package:biblioteca_digital_proyecto_cftic/widgets/widgets.dart';
-import 'package:path_provider/path_provider.dart';
+
 
 class AltaLibro extends StatefulWidget {
   // Se define ruta de PantallaLoginEmail
@@ -40,8 +40,7 @@ class AltaLibroState extends State<AltaLibro> {
   // Definicion de Control Dropdown
   final _dropdownFormKey = GlobalKey<FormState>();
 
-  final String urlinsertar =
-      "https://apibiblioteca.azurewebsites.net/biblioteca/";
+  final String urlinsertar = "https://apibiblioteca.azurewebsites.net/biblioteca/";
   String urlapi = "";
 
   String imageName = "";
