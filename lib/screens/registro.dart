@@ -69,7 +69,7 @@ class RegistroState extends State<Registro> {
                 // Damos margen entre ultima caja y boton
                 padding: const EdgeInsets.all(80.0),
                 // Llamamos a BotonconIcono para sacar boton registrarse
-                child: BotonIcono(
+                child: BotonIconoAnimado(
                   accion: () {
                     String email = emailController.text;
                     String password = passwordController.text;

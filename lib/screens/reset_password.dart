@@ -42,7 +42,7 @@ class _ResetPasswordState extends State<ResetPassword> {
           Container(
             width: 200,
             height: 50,
-            child: BotonIcono(
+            child: BotonIconoAnimado(
               accion: () {
                 String email = emailController.text;
                 Autentificacion.resetPassword(context, email);

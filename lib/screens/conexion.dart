@@ -1,4 +1,5 @@
 
+import 'package:biblioteca_digital_proyecto_cftic/widgets/boton_imagen_animado.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -91,7 +92,7 @@ class ConexionState extends State<Conexion> {
                 Padding(
                   // Añado margenes entre botones y con respecto a la caja
                   padding: const EdgeInsets.only(top: 30, left: 10, right: 10),
-                  child: BotonIcono(
+                  child: BotonIconoAnimado(
                     accion: () {
                       String email = emailController.text;
                       String password = passwordController.text;
@@ -104,7 +105,7 @@ class ConexionState extends State<Conexion> {
                 Padding(
                   // Añado margenes entre botones y con respecto a la caja
                   padding: const EdgeInsets.only(top: 30, left: 10, right: 10),
-                  child: BotonImagen(
+                  child: BotonImagenAnimado(
                     accion: () {
                       Autentificacion.signinWithGoogle(context: context);
                     },
