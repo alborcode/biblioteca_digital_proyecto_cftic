@@ -3,6 +3,12 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+
 import 'package:http/http.dart' as http;
 
 // Importacion de Pantallas
@@ -31,6 +37,12 @@ class BusquedaTematicaState extends State<BusquedaTematica> {
   List? data;
 
   String mensajeStatus = "";
+
+  String? downloadURL;
+  // Referencia para Storage
+  FirebaseStorage storageRefImagen = FirebaseStorage.instance;
+  String collectionNameFile = "libros";
+  String collectionNameImage = "portadas";
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +92,7 @@ class BusquedaTematicaState extends State<BusquedaTematica> {
               children: [
                 Padding(
                   padding: const EdgeInsets.only(top: 10.0),
-                  child: BotonIcono(
+                  child: BotonIconoAnimado(
                     accion: () {
                       //if (_dropdownFormKey.currentState!.validate()) {
                       getLibrosTematica(valorseleccionado);
@@ -173,79 +185,106 @@ class BusquedaTematicaState extends State<BusquedaTematica> {
         // Por cada registro recorro el json
         itemBuilder: (BuildContext context, int index) {
           return Container(
-              padding: const EdgeInsets.only(top:5.0, left:10.0, right:10.0),
-              child: Card(
-                  elevation: 0,
-                  color: Colors.transparent,
-                  child: Column(
+              padding: const EdgeInsets.only(left:10.0, right:5.0),
+              child: Column(
+                children: [
+                  Row(
+                    //crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Row(
+                      Padding(
+                        padding: const EdgeInsets.only(left:5.0, right:10.0, top: 10),
+                        child: FittedBox(
+                          fit: BoxFit.cover,
+                          child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.start,
                               children: <Widget>[
-                                const Text("Título: ",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey)),
-                                // Añadimos el toString dado que el campo es numerico
-                                Text(data![index]["titulo"],
-                                    style: const TextStyle(
-                                        fontSize: 16.0, color: Colors.black)),
-                              ],
-                            ),
-                            Row(
-                              children: <Widget>[
-                                const Text("Autor: ",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey)),
-                                // Añadimos el toString dado que el campo es numerico
-                                Text(data![index]["autor"],
-                                    style: const TextStyle(
-                                        fontSize: 16.0, color: Colors.black)),
-                              ],
-                            ),
-                            Row(
-                              children: <Widget>[
-                                const Text("Temática: ",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey)),
-                                // Admiracion dado que es nulable
-                                Text(data![index]["tematica"],
-                                    style: const TextStyle(
-                                        fontSize: 16.0, color: Colors.black)),
-                              ],
-                            ),
-                          ]
+                                FutureBuilder(
+                                  future: loadUbicacionImagen(data![index]["imagenPortada"]),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasError) {
+                                      return const Text("Something went wrong",);
+                                    }
+                                    if (snapshot.connectionState == ConnectionState.done) {
+                                      return SizedBox(
+                                        height: 80,
+                                        width: 50,
+                                        child: Image.network(
+                                          snapshot.data.toString(),
+                                        ),
+                                      );
+                                    }
+                                    return const Center(child: CircularProgressIndicator());
+                                  },
+                                ),
+                              ]
+                          ),
+                        ),
                       ),
-                      Row(
-                        // Alineamos Icono en Fila despues de Datos
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          CircleAvatar(
-                            backgroundColor: Colors.brown,
-                            foregroundColor: Colors.white,
-                            child: IconButton(
+                      Padding(
+                        padding: const EdgeInsets.only(left:5.0, right:5.0, top: 10),
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            // Alineamos en la columna los textos a la izquierda
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: <Widget>[
+                                  Text(data![index]["titulo"],
+                                      style: const TextStyle(
+                                        fontSize: 14.0, color: Colors.black,)),
+                                ],
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Text(data![index]["autor"],
+                                      style: const TextStyle(
+                                          fontSize: 14.0, color: Colors.black)),
+                                ],
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Text(data![index]["tematica"],
+                                      style: const TextStyle(
+                                          fontSize: 14.0, color: Colors.grey)),
+                                ],
+                              ),
+                            ]
+                        ),
+                      ),
+                      // Usamos Spacer para que alinea la ultima fia a la derecha
+                      const Spacer(),
+                      Padding(
+                        padding: const EdgeInsets.only(left:5.0, right:5.0, top: 10),
+                        child: Column(
+                          // Alineamos Icono en Fila despues de Datos
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            IconButton(
                                 icon: const Icon(Icons.download_rounded),
                                 splashColor: Colors.brown,
                                 // Al presionar en boton muestra dialogo de descarga
                                 onPressed: () {
                                   ventanaDescarga(context);
                                 }
-                            ),
-                          )
-                        ],
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.only(top:5.0),
-                        child: Divider(
-                          thickness: 1,
+                            )
+                          ],
                         ),
                       ),
                     ],
-                  )
+                  ),
+                  // Añadimos dentro la columna un segundo elemento el divider
+                  const Padding(
+                    padding: EdgeInsets.only(top:5.0),
+                    child: Divider(
+                      thickness: 1,
+                    ),
+                  ),
+                ],
               )
           );
         }
@@ -268,6 +307,25 @@ class BusquedaTematicaState extends State<BusquedaTematica> {
     );
   }
 
+  // Future para cargar URL segun nombre de fichero guardado
+  Future loadUbicacionImagen(nombrefichero) async {
+    try {
+      await downloadURLImagen(nombrefichero);
+      return downloadURL;
+    } catch (e) {
+      debugPrint("Error - $e");
+      return null;
+    }
+  }
+
+  // Future que recupera la URL de la Imagen
+  Future<void> downloadURLImagen(nombrefichero) async {
+    downloadURL = await FirebaseStorage.instance
+        .ref("portadas")
+        .child(nombrefichero)
+        .getDownloadURL();
+    debugPrint(downloadURL.toString());
+  }
 
   // Generamos con Future funcion asincrona getDoctoresData
   // Tipo Future que devolvera un String (al ser consulta)

@@ -46,23 +46,29 @@ class MenuLateral extends StatelessWidget {
                 ),
               )
           ),*/
-          const UserAccountsDrawerHeader(
-            decoration: BoxDecoration(color: Colors.brown),
-            accountName: Text(
+          UserAccountsDrawerHeader(
+            decoration: const BoxDecoration(color: Colors.brown),
+            accountName: const Text(
               "Alberto Rubio & Antonio Turel",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
               ),
             ),
-            accountEmail: Text(
+            accountEmail: const Text(
               "proyectoflutter2022@gmail.com",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
               ),
             ),
-            currentAccountPicture: FlutterLogo(),
+            //currentAccountPicture: FlutterLogo(),
+            currentAccountPicture:
+            Image.asset('assets/images/Books.png',
+              height: 24,
+              fit: BoxFit.fitHeight,
+            ),
           ),
           ListTile(
+            hoverColor: Colors.orangeAccent,
             leading: const Icon(Icons.assignment_ind),
             title: const Text('Busqueda por Autor'),
             // Actualiza el estado de la aplicación
@@ -113,7 +119,7 @@ class MenuLateral extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.exit_to_app),
-            title: const Text('Desconectarse'),
+            title: const Text('Desconexión'),
             onTap: () {
               // Cierra el drawer
               Navigator.pop(context);

@@ -55,9 +55,15 @@ class AppRoutes{
     ),
     MenuOpcion(
         ruta: '/AltaLibro',
-        nombre: 'Subir Libro',
+        nombre: 'Alta Libro',
         pantalla: const AltaLibro(),
         icono: Icons.start
+    ),
+    MenuOpcion(
+        ruta: '/Conexion',
+        nombre: 'Desconexion',
+        pantalla: const Conexion(),
+        icono: Icons.exit_to_app
     ),
   ];
 

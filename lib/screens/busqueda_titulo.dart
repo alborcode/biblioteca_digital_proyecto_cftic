@@ -44,7 +44,7 @@ class BusquedaTituloState extends State<BusquedaTitulo> {
 
   String? downloadURL;
   // Referencia para Storage
-  FirebaseStorage storageRef = FirebaseStorage.instance;
+  FirebaseStorage storageRefImagen = FirebaseStorage.instance;
   String collectionNameFile = "libros";
   String collectionNameImage = "portadas";
 
@@ -93,7 +93,7 @@ class BusquedaTituloState extends State<BusquedaTitulo> {
             Padding(
               // Añado margenes entre botones y con respecto a la caja
               padding: const EdgeInsets.only(top: 30, left: 10, right: 10),
-              child: BotonIcono(
+              child: BotonIconoAnimado(
                 accion: () {
                   getLibrosTitulo(busquedaController.text);
                   _busquedaFocus.unfocus();
@@ -126,13 +126,13 @@ class BusquedaTituloState extends State<BusquedaTitulo> {
         itemBuilder: (BuildContext context, int index) {
           return Container(
               padding: const EdgeInsets.only(left:10.0, right:5.0),
-              child: Card(
-                  elevation: 0,
-                  color: Colors.transparent,
-                  child: Row(
+              child: Column(
+                children: [
+                  Row(
                     //crossAxisAlignment: CrossAxisAlignment.stretch,
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.start,
+                    //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(left:5.0, right:10.0, top: 10),
@@ -165,7 +165,7 @@ class BusquedaTituloState extends State<BusquedaTitulo> {
                         ),
                       ),
                       Padding(
-                        padding: const EdgeInsets.only(left:10.0, right:5.0, top: 10),
+                        padding: const EdgeInsets.only(left:5.0, right:5.0, top: 10),
                         child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             // Alineamos en la columna los textos a la izquierda
@@ -173,66 +173,58 @@ class BusquedaTituloState extends State<BusquedaTitulo> {
                             children: [
                               Row(
                                 children: <Widget>[
-                                  const Text("Título: ",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.grey)),
-                                  // Añadimos el toString dado que el campo es numerico
                                   Text(data![index]["titulo"],
-                                      style: const TextStyle(
-                                          fontSize: 16.0, color: Colors.black)),
+                                        style: const TextStyle(
+                                            fontSize: 14.0, color: Colors.black,)),
                                 ],
                               ),
                               Row(
                                 children: <Widget>[
-                                  const Text("Autor: ",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.grey)),
-                                  // Añadimos el toString dado que el campo es numerico
                                   Text(data![index]["autor"],
                                       style: const TextStyle(
-                                          fontSize: 16.0, color: Colors.black)),
+                                          fontSize: 14.0, color: Colors.black)),
                                 ],
                               ),
                               Row(
                                 children: <Widget>[
-                                  const Text("Temática: ",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.grey)),
-                                  // Admiracion dado que es nulable
                                   Text(data![index]["tematica"],
                                       style: const TextStyle(
-                                          fontSize: 16.0, color: Colors.black)),
+                                          fontSize: 14.0, color: Colors.grey)),
                                 ],
                               ),
                             ]
                         ),
                       ),
-                      Row(
-                        // Alineamos Icono en Fila despues de Datos
-                        mainAxisSize: MainAxisSize.max,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: <Widget>[
-                          IconButton(
-                              icon: const Icon(Icons.download_rounded),
-                              splashColor: Colors.brown,
-                              // Al presionar en boton muestra dialogo de descarga
-                              onPressed: () {
-                                ventanaDescarga(context);
-                              }
-                          )
-                        ],
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.only(top:5.0),
-                        child: Divider(
-                          thickness: 1,
+                      // Usamos Spacer para que alinea la ultima fia a la derecha
+                      const Spacer(),
+                      Padding(
+                        padding: const EdgeInsets.only(left:5.0, right:5.0, top: 10),
+                        child: Column(
+                          // Alineamos Icono en Fila despues de Datos
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            IconButton(
+                                icon: const Icon(Icons.download_rounded),
+                                splashColor: Colors.brown,
+                                // Al presionar en boton muestra dialogo de descarga
+                                onPressed: () {
+                                  ventanaDescarga(context);
+                                }
+                            )
+                          ],
                         ),
                       ),
                     ],
-                  )
+                  ),
+                  // Añadimos dentro la columna un segundo elemento el divider
+                  const Padding(
+                    padding: EdgeInsets.only(top:5.0),
+                    child: Divider(
+                      thickness: 1,
+                    ),
+                  ),
+                ],
               )
           );
         }
@@ -256,7 +248,7 @@ class BusquedaTituloState extends State<BusquedaTitulo> {
       );
   }
 
-
+  // Future para cargar URL segun nombre de fichero guardado
   Future loadUbicacionImagen(nombrefichero) async {
     try {
       await downloadURLImagen(nombrefichero);

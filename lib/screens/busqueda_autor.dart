@@ -48,6 +48,13 @@ class BusquedaAutorState extends State<BusquedaAutor> {
   List? data;
   String mensajeStatus = "";
 
+  // Para sacar URL de Imagen a mostrar
+  String? downloadURL;
+  // Referencia para Storage
+  FirebaseStorage storageRefImagen = FirebaseStorage.instance;
+  String collectionNameFile = "libros";
+  String collectionNameImage = "portadas";
+
   String nombrefichero = "";
 
   // Create a reference from an HTTPS URL Note that in the URL, characters are URL escaped!
@@ -106,7 +113,7 @@ class BusquedaAutorState extends State<BusquedaAutor> {
                     // Añado margenes entre botones y con respecto a la caja
                     padding: const EdgeInsets.only(
                         top: 30, left: 10, right: 10),
-                    child: BotonIcono(
+                    child: BotonIconoAnimado(
                       accion: () {
                         getLibrosAutor(busquedaController.text);
                         _busquedaFocus.unfocus();
@@ -134,87 +141,113 @@ class BusquedaAutorState extends State<BusquedaAutor> {
   ListView listado() {
     return ListView.builder(
       // El numero de elementos será la longitud de la lista data
-      itemCount: data == null ? 0 : data!.length,
-      // Por cada registro recorro el json
-      itemBuilder: (BuildContext context, int index) {
-        return Container(
-            padding: const EdgeInsets.only(top: 5.0, left: 10.0, right: 10.0),
-            child: Card(
-                elevation: 0,
-                color: Colors.transparent,
-                child: Column(
+        itemCount: data == null ? 0 : data!.length,
+        // Por cada registro recorro el json
+        itemBuilder: (BuildContext context, int index) {
+          return Container(
+              padding: const EdgeInsets.only(left:10.0, right:5.0),
+              child: Column(
+                children: [
+                  Row(
+                    //crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Row(
+                      Padding(
+                        padding: const EdgeInsets.only(left:5.0, right:10.0, top: 10),
+                        child: FittedBox(
+                          fit: BoxFit.cover,
+                          child: Column(
+                              mainAxisSize: MainAxisSize.max,
+                              mainAxisAlignment: MainAxisAlignment.start,
                               children: <Widget>[
-                                const Text("Título: ",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey)),
-                                // Añadimos el toString dado que el campo es numerico
-                                Text(data![index]["titulo"],
-                                    style: const TextStyle(
-                                        fontSize: 16.0, color: Colors.black)),
-                              ],
-                            ),
-                            Row(
-                              children: <Widget>[
-                                const Text("Autor: ",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey)),
-                                // Añadimos el toString dado que el campo es numerico
-                                Text(data![index]["autor"],
-                                    style: const TextStyle(
-                                        fontSize: 16.0, color: Colors.black)),
-                              ],
-                            ),
-                            Row(
-                              children: <Widget>[
-                                const Text("Temática: ",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey)),
-                                // Admiracion dado que es nulable
-                                Text(data![index]["tematica"],
-                                    style: const TextStyle(
-                                        fontSize: 16.0, color: Colors.black)),
-                              ],
-                            ),
-                          ]
-                      ),
-                      Row(
-                        // Alineamos Icono en Fila despues de Datos
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            CircleAvatar(
-                                backgroundColor: Colors.brown,
-                                foregroundColor: Colors.white,
-                                child: IconButton(
-                                    icon: const Icon(Icons.download_rounded),
-                                    splashColor: Colors.brown,
-                                    // Al presionar en boton muestra dialogo de descarga
-                                    onPressed: () {
-                                      nombrefichero = data![index]["urlDescarga"];
-                                      ventanaDescarga(context, nombrefichero);
+                                FutureBuilder(
+                                  future: loadUbicacionImagen(data![index]["imagenPortada"]),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasError) {
+                                      return const Text("Something went wrong",);
                                     }
-                                )
-                            )
-                          ]
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.only(top:5.0),
-                        child: Divider(
-                          thickness: 1,
+                                    if (snapshot.connectionState == ConnectionState.done) {
+                                      return SizedBox(
+                                        height: 80,
+                                        width: 50,
+                                        child: Image.network(
+                                          snapshot.data.toString(),
+                                        ),
+                                      );
+                                    }
+                                    return const Center(child: CircularProgressIndicator());
+                                  },
+                                ),
+                              ]
+                          ),
                         ),
                       ),
-                    ]
-                )
-            )
-        );
-      },
+                      Padding(
+                        padding: const EdgeInsets.only(left:5.0, right:5.0, top: 10),
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            // Alineamos en la columna los textos a la izquierda
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: <Widget>[
+                                  Text(data![index]["titulo"],
+                                      style: const TextStyle(
+                                        fontSize: 14.0, color: Colors.black,)),
+                                ],
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Text(data![index]["autor"],
+                                      style: const TextStyle(
+                                          fontSize: 14.0, color: Colors.black)),
+                                ],
+                              ),
+                              Row(
+                                children: <Widget>[
+                                  Text(data![index]["tematica"],
+                                      style: const TextStyle(
+                                          fontSize: 14.0, color: Colors.grey)),
+                                ],
+                              ),
+                            ]
+                        ),
+                      ),
+                      // Usamos Spacer para que alinea la ultima fia a la derecha
+                      const Spacer(),
+                      Padding(
+                        padding: const EdgeInsets.only(left:5.0, right:5.0, top: 10),
+                        child: Column(
+                          // Alineamos Icono en Fila despues de Datos
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: <Widget>[
+                            IconButton(
+                                icon: const Icon(Icons.download_rounded),
+                                splashColor: Colors.brown,
+                                // Al presionar en boton muestra dialogo de descarga
+                                onPressed: () {
+                                  ventanaDescarga(context, nombrefichero);
+                                }
+                            )
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  // Añadimos dentro la columna un segundo elemento el divider
+                  const Padding(
+                    padding: EdgeInsets.only(top:5.0),
+                    child: Divider(
+                      thickness: 1,
+                    ),
+                  ),
+                ],
+              )
+          );
+        }
     );
   }
 
@@ -260,32 +293,27 @@ class BusquedaAutorState extends State<BusquedaAutor> {
     //mensaje(context, 'Descargado ${ref.name}');
   }
 
-  /*Future<void> donwloadFileURL(Reference ref) async {
-    final nombrelibroURL = nombrefichero;
-    final url = await ref.getDownloadURL();
 
-    final tempdir = await getTemporaryDirectory();
-    final path = "${tempdir.path}${ref.name}";
 
-    await Dio().download(
-        url,
-        path,
-        onReceiveProgress: (received, total){
-          double progress = received / total;
-          setState((){
-            downloadProgress = progress;
-            mensajeProgreso(context, nombrelibroURL, downloadProgress);
-          });
-        }
-    );
-
-    if (url.contains('.mp4')){
-      await GallerySaver.saveVideo(path, toDcim: true);
-    }else if (url.contains('.jpg')){
-      await GallerySaver.saveImage(path, toDcim: true);
+  // Future para cargar URL segun nombre de fichero guardado
+  Future loadUbicacionImagen(nombrefichero) async {
+    try {
+      await downloadURLImagen(nombrefichero);
+      return downloadURL;
+    } catch (e) {
+      debugPrint("Error - $e");
+      return null;
     }
+  }
 
-  }*/
+  // Future que recupera la URL de la Imagen
+  Future<void> downloadURLImagen(nombrefichero) async {
+    downloadURL = await FirebaseStorage.instance
+        .ref("portadas")
+        .child(nombrefichero)
+        .getDownloadURL();
+    debugPrint(downloadURL.toString());
+  }
 
   // Generamos con Future funcion asincrona getLibrosAutor de consulta
   Future<String> getLibrosAutor(String filtro) async {
