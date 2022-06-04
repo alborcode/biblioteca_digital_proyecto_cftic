@@ -174,7 +174,7 @@ class AltaLibroState extends State<AltaLibro> {
                         // Añado margenes entre botones y con respecto a la caja
                         padding:
                             const EdgeInsets.only(top: 30, left: 5, right: 5),
-                        child: BotonIcono(
+                        child: BotonIconoAnimado(
                           accion: () {
                             _uploadImage();
                           },
@@ -192,7 +192,7 @@ class AltaLibroState extends State<AltaLibro> {
                         // Añado margenes entre botones y con respecto a la caja
                         padding:
                             const EdgeInsets.only(top: 10, left: 10, right: 10),
-                        child: BotonIcono(
+                        child: BotonIconoAnimado(
                           accion: () {
                             selectFile();
                           },
@@ -204,7 +204,7 @@ class AltaLibroState extends State<AltaLibro> {
                         // Añado margenes entre botones y con respecto a la caja
                         padding:
                             const EdgeInsets.only(top: 10, left: 10, right: 10),
-                        child: BotonIcono(
+                        child: BotonIconoAnimado(
                           accion: () {
                             _uploadFile();
                             String tituloinsert = tituloController.text;

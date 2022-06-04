@@ -27,10 +27,11 @@ class BotonIconosinTexto extends StatelessWidget {
   Widget build(BuildContext context) {
     // Envolvemos en Center el ElevatedButton para que los muestre centrados
     // y del tamaño del icono y texto y no expanda los botones
-    return Center(
+    return InkWell(
       child: CircleAvatar(
         backgroundColor: Colors.brown,
         child: IconButton(
+          splashColor: Colors.orangeAccent,
           color: Colors.white,
           icon: Icon(icono),
           onPressed: accion,
