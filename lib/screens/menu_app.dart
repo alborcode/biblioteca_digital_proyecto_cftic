@@ -24,15 +24,20 @@ class MenuApp extends StatelessWidget{
         ),
         body: ListView.separated(
           shrinkWrap: true,
-
           itemBuilder: (context, i) =>
           ListTile(
             //hoverColor: Colors.brown,
             //iconColor: Colors.orangeAccent,
-            leading: Icon(AppRoutes.menuOpciones[i].icono),
-            title: Text(AppRoutes.menuOpciones[i].nombre),
+            leading: InkWell(
+                splashColor: Colors.orangeAccent,
+                child: Icon(AppRoutes.menuOpciones[i].icono)
+            ),
+            title: InkWell(
+                splashColor: Colors.orangeAccent,
+                child: Text(AppRoutes.menuOpciones[i].nombre)
+            ),
             onTap: (){
-              if (AppRoutes.menuOpciones[i].nombre == 'Deconexion') {
+              if (AppRoutes.menuOpciones[i].nombre == 'Desconexion') {
                 SchedulerBinding.instance.addPostFrameCallback((_) {
                   Autentificacion.signout(context: context);
                   Navigator.of(context).pushReplacement(

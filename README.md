@@ -1,2 +1,2 @@
 # biblioteca_digital_proyecto_cftic
-Proyecto Curso Flutter CFTIC Getafe
+Proyecto Flutter para Curso Flutter 2022 CFTIC
