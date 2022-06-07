@@ -1,14 +1,11 @@
 
-import 'package:biblioteca_digital_proyecto_cftic/widgets/onhover_boton.dart';
-import 'package:biblioteca_digital_proyecto_cftic/widgets/onhover_texto.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 // Importacion Rutas de la Aplicacion
 import 'package:biblioteca_digital_proyecto_cftic/routes/app_routes.dart';
 import 'package:flutter/scheduler.dart';
 
-import '../services/autentificacion.dart';
+import 'package:biblioteca_digital_proyecto_cftic/services/autentificacion.dart';
 import 'conexion.dart';
 
 class MenuApp extends StatelessWidget{
@@ -42,8 +39,6 @@ class MenuApp extends StatelessWidget{
                   Autentificacion.signout(context: context);
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (context) => const Conexion()));
-                  /*Navigator.of(context).pushReplacement(
-                      CupertinoPageRoute(builder: (context) => const Conexion()));*/
                 });
               } else {
                   Navigator.pushNamed(context, AppRoutes.menuOpciones[i].ruta);

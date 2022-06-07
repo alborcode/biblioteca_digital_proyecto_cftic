@@ -1,7 +1,5 @@
 
-import 'package:biblioteca_digital_proyecto_cftic/widgets/boton_imagen_animado.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import 'package:biblioteca_digital_proyecto_cftic/services/autentificacion.dart';
 

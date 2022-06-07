@@ -10,7 +10,4 @@ export 'package:biblioteca_digital_proyecto_cftic/widgets/caja_texto.dart';
 export 'package:biblioteca_digital_proyecto_cftic/widgets/card_texto.dart';
 export 'package:biblioteca_digital_proyecto_cftic/widgets/card_imagen.dart';
 export 'package:biblioteca_digital_proyecto_cftic/widgets/mensaje.dart';
-export 'package:biblioteca_digital_proyecto_cftic/widgets/mensaje_progreso.dart';
 export 'package:biblioteca_digital_proyecto_cftic/widgets/menu_lateral.dart';
-export 'package:biblioteca_digital_proyecto_cftic/widgets/onhover_boton.dart';
-export 'package:biblioteca_digital_proyecto_cftic/widgets/onhover_texto.dart';

@@ -6,8 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 // Importacion de Pantallas
 import 'package:biblioteca_digital_proyecto_cftic/screens/screens.dart';
-// Importamos Widgets personalizados
-import 'package:biblioteca_digital_proyecto_cftic/widgets/widgets.dart';
 
 class VerificarEmail extends StatefulWidget {
   const VerificarEmail({Key? key}) : super(key: key);

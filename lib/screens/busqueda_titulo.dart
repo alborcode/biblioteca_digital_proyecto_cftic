@@ -1,15 +1,17 @@
 
 
+import 'package:dio/dio.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-
 import 'package:http/http.dart' as http;
+import 'package:open_file/open_file.dart';
+
+// Importar libreria para acceso documentos locales
+import 'package:path_provider/path_provider.dart';
+
+import 'dart:io';
 
 // Importamos Widgets personalizados
 import 'package:biblioteca_digital_proyecto_cftic/widgets/widgets.dart';
@@ -34,19 +36,21 @@ class BusquedaTituloState extends State<BusquedaTitulo> {
   // Variables para el foco
   final FocusNode _busquedaFocus = FocusNode();
 
-  //final String urlbuscar = "https://apibiblioteca.azurewebsites.net/Biblioteca/GetTitulo/";
   final String urlbuscar = "https://apibiblioteca.azurewebsites.net/Biblioteca/GetTitulos/";
   String urlapi = "";
   // La variable data recupera los datos del webapi en una lista o coleccion
   List? data;
 
-  String mensajeStatus = "";
-
+  // Para sacar URL de Imagen a mostrar
   String? downloadURL;
   // Referencia para Storage
   FirebaseStorage storageRefImagen = FirebaseStorage.instance;
   String collectionNameFile = "libros";
+  FirebaseStorage storageRefLibro = FirebaseStorage.instance;
   String collectionNameImage = "portadas";
+
+  String nombreimagen = "";
+  String nombrefichero = "";
 
   @override
   Widget build(BuildContext context) {
@@ -208,9 +212,14 @@ class BusquedaTituloState extends State<BusquedaTitulo> {
                                 icon: const Icon(Icons.download_rounded),
                                 splashColor: Colors.brown,
                                 // Al presionar en boton muestra dialogo de descarga
-                                onPressed: () {
-                                  ventanaDescarga(context);
-                                }
+                              onPressed: () async {
+                                nombrefichero = data![index]["urlDescarga"];
+                                final url = await loadUbicacionFile(nombrefichero);
+                                openFile(
+                                  url,
+                                  nombrefichero,
+                                );
+                              },
                             )
                           ],
                         ),
@@ -231,21 +240,51 @@ class BusquedaTituloState extends State<BusquedaTitulo> {
     );
   }
 
+  // Future para cargar URL segun nombre de fichero guardado
+  Future loadUbicacionFile(nombrelibro) async {
+    try {
+      await downloadURLFile(nombrelibro);
+      return downloadURL;
+    } catch (e) {
+      debugPrint("Error - $e");
+      return null;
+    }
+  }
 
-  void ventanaDescarga(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) =>
-        AlertaDialogo(
-          titulo: "Descargar",
-          texto: "Pulse boton descargar para descargar este libro a su dispositivo",
-          textoBoton1: "Descargar",
-          textoBoton2: "Cancelar",
-          accion: () {
-            // Llamada a url guarda para descargar
-          },
-        )
+  // Future que recupera la URL de la Imagen
+  Future<void> downloadURLFile(nombrelibro) async {
+    downloadURL = await FirebaseStorage.instance
+        .ref("libros")
+        .child(nombrelibro)
+        .getDownloadURL();
+    debugPrint(downloadURL.toString());
+  }
+
+  Future openFile(String url, String nombrefichero) async {
+    final file = await downloadFile(url,nombrefichero);
+    if (file == null) return;
+    OpenFile.open(file.path);
+  }
+
+  Future<File?> downloadFile(String url, String nombrefichero) async {
+    final appDocDir = await getApplicationDocumentsDirectory();
+    final file = File('${appDocDir.path}/$nombrefichero');
+    try{
+      final response = await Dio().get(
+        url,
+        options: Options(
+          responseType: ResponseType.bytes,
+          followRedirects: false,
+          receiveTimeout: 0,
+        ),
       );
+      final raf = file.openSync(mode: FileMode.write);
+      raf.writeFromSync(response.data);
+      await raf.close();
+      return file;
+    } catch(e){
+      return null;
+    }
   }
 
   // Future para cargar URL segun nombre de fichero guardado
@@ -273,12 +312,10 @@ class BusquedaTituloState extends State<BusquedaTitulo> {
     urlapi = "$urlbuscar$filtro";
     // Para poder usar await el metodo tiene que ser asincrono en el Future
     var res = await http.get(Uri.parse(urlapi), headers: {"Accept": "application/json"});
-
     int statusCode = res.statusCode;
     if (statusCode != 200){
       mensaje(context, 'No hay datos a mostrar');
     }
-
     // Entrara en SetState cuando haya obtenido los resultados
     setState(() {
       data = json.decode(res.body);

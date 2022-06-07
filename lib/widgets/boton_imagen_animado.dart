@@ -7,8 +7,6 @@
 
 import 'package:flutter/material.dart';
 
-import 'package:biblioteca_digital_proyecto_cftic/theme/app_theme.dart';
-
 class BotonImagenAnimado extends StatelessWidget {
   // la accion del boton y el texto son obligatorios
   const BotonImagenAnimado({

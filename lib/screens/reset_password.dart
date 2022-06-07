@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:biblioteca_digital_proyecto_cftic/services/autentificacion.dart';
 
-// Importacion de Pantallas
-import 'package:biblioteca_digital_proyecto_cftic/screens/screens.dart';
 // Importamos Widgets personalizados
 import 'package:biblioteca_digital_proyecto_cftic/widgets/widgets.dart';
 

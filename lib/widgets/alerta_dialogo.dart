@@ -1,6 +1,6 @@
 /*
 *
-* CLASE PARA CREAR UN BOTON FLOTANTE (FloatingActionButton)
+* CLASE PARA CREAR UN ALERT DIALOG
 * Se enviara como parametros
 * - titulo: titulo de alerta
 * - texto: texto de alerta

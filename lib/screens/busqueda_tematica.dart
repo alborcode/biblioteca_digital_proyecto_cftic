@@ -1,18 +1,17 @@
 
-// Pendiente
+import 'package:dio/dio.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:open_file/open_file.dart';
+
+// Importar libreria para acceso documentos locales
+import 'package:path_provider/path_provider.dart';
+
 import 'dart:io';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-
-import 'package:http/http.dart' as http;
-
-// Importacion de Pantallas
-import 'package:biblioteca_digital_proyecto_cftic/screens/screens.dart';
 // Importamos Widgets personalizados
 import 'package:biblioteca_digital_proyecto_cftic/widgets/widgets.dart';
 
@@ -36,13 +35,16 @@ class BusquedaTematicaState extends State<BusquedaTematica> {
   // La variable data recupera los datos del webapi en una lista o coleccion
   List? data;
 
-  String mensajeStatus = "";
-
+  // Para sacar URL de Imagen a mostrar
   String? downloadURL;
   // Referencia para Storage
   FirebaseStorage storageRefImagen = FirebaseStorage.instance;
   String collectionNameFile = "libros";
+  FirebaseStorage storageRefLibro = FirebaseStorage.instance;
   String collectionNameImage = "portadas";
+
+  String nombreimagen = "";
+  String nombrefichero = "";
 
   @override
   Widget build(BuildContext context) {
@@ -268,9 +270,14 @@ class BusquedaTematicaState extends State<BusquedaTematica> {
                                 icon: const Icon(Icons.download_rounded),
                                 splashColor: Colors.brown,
                                 // Al presionar en boton muestra dialogo de descarga
-                                onPressed: () {
-                                  ventanaDescarga(context);
-                                }
+                              onPressed: () async {
+                                nombrefichero = data![index]["urlDescarga"];
+                                final url = await loadUbicacionFile(nombrefichero);
+                                openFile(
+                                  url,
+                                  nombrefichero,
+                                );
+                              },
                             )
                           ],
                         ),
@@ -291,20 +298,51 @@ class BusquedaTematicaState extends State<BusquedaTematica> {
     );
   }
 
-  void ventanaDescarga(BuildContext context) {
-    showDialog(
-        context: context,
-        builder: (ctx) =>
-            AlertaDialogo(
-              titulo: "Descargar",
-              texto: "Pulse boton descargar para descargar este libro a su dispositivo",
-              textoBoton1: "Descargar",
-              textoBoton2: "Cancelar",
-              accion: () {
-                // Llamada a url guarda para descargar
-              },
-            )
-    );
+  // Future para cargar URL segun nombre de fichero guardado
+  Future loadUbicacionFile(nombrelibro) async {
+    try {
+      await downloadURLFile(nombrelibro);
+      return downloadURL;
+    } catch (e) {
+      debugPrint("Error - $e");
+      return null;
+    }
+  }
+
+  // Future que recupera la URL de la Imagen
+  Future<void> downloadURLFile(nombrelibro) async {
+    downloadURL = await FirebaseStorage.instance
+        .ref("libros")
+        .child(nombrelibro)
+        .getDownloadURL();
+    debugPrint(downloadURL.toString());
+  }
+
+  Future openFile(String url, String nombrefichero) async {
+    final file = await downloadFile(url,nombrefichero);
+    if (file == null) return;
+    OpenFile.open(file.path);
+  }
+
+  Future<File?> downloadFile(String url, String nombrefichero) async {
+    final appDocDir = await getApplicationDocumentsDirectory();
+    final file = File('${appDocDir.path}/$nombrefichero');
+    try{
+      final response = await Dio().get(
+        url,
+        options: Options(
+          responseType: ResponseType.bytes,
+          followRedirects: false,
+          receiveTimeout: 0,
+        ),
+      );
+      final raf = file.openSync(mode: FileMode.write);
+      raf.writeFromSync(response.data);
+      await raf.close();
+      return file;
+    } catch(e){
+      return null;
+    }
   }
 
   // Future para cargar URL segun nombre de fichero guardado
@@ -333,26 +371,13 @@ class BusquedaTematicaState extends State<BusquedaTematica> {
     urlapi = "$urlbuscar$filtro";
     // Para poder usar await el metodo tiene que ser asincrono en el Future
     var res = await http.get(Uri.parse(urlapi), headers: {"Accept": "application/json"});
-
     int statusCode = res.statusCode;
     if (statusCode != 200){
       mensaje(context, 'No hay datos a mostrar');
     }
     // Entrara en SetState cuando haya obtenido los resultados
-
     setState(() {
       data = json.decode(res.body);
-      //data = json.decode(res.body);
-      //var resBody = json.decode(res.body);
-      // resBody["titulo"];
-      // resBody["Autor"];
-      // resBody["Teamtica"];
-
-      // Deserializamos el body del Json en String
-      // var resBody = json.decode(res.body);
-      // Se vuelca en la lista el array de results
-      // data = resBody["Empleados"];
-      // Se recoge sin variable
     });
     return "Realizado!";
   }

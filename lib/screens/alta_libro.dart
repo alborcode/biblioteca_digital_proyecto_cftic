@@ -136,18 +136,6 @@ class AltaLibroState extends State<AltaLibro> {
                     // Centra los elementos en la fila horizontalmente
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-           /*           Padding(
-                        // Añado margenes entre botones y con respecto a la caja
-                        padding:
-                            const EdgeInsets.only(top: 30, left: 10, right: 10),
-                        child: BotonIcono(
-                          accion: () {
-                            imagePicker();
-                          },
-                          icono: Icons.photo,
-                          texto: 'Seleccionar Portada',
-                        ),
-                      ),*/
                       Padding(
                         // Añado margenes entre botones y con respecto a la caja
                         padding:
@@ -242,7 +230,6 @@ _uploadFile() {
     uploadTask.snapshotEvents.listen((event) {
       print("${event.bytesTransferred}\t${event.totalBytes}");
     });
-
     setState(() {
       _isLoading = false;
     });
@@ -258,7 +245,6 @@ _uploadFile() {
       fileName = File(path);
     });
   }
-
 
   imagePicker() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -285,7 +271,6 @@ _uploadFile() {
     setState(() {
       _isLoading = true;
     });
-
     uploadImageName = DateTime.now().millisecondsSinceEpoch.toString() + ".jpg";
     Reference reference =
         storageRef.ref().child(collectionNameImage).child(uploadImageName);
@@ -293,7 +278,6 @@ _uploadFile() {
     uploadTask.snapshotEvents.listen((event) {
       print("${event.bytesTransferred}\t${event.totalBytes}");
     });
-
     uploadTask.whenComplete(() async {
       setState(() {
         _isLoading = false;
@@ -388,9 +372,7 @@ _uploadFile() {
     int statusCode = response.statusCode;
     if (statusCode == 200) {
       mensaje(context, 'Insercion realizada correctamente');
-      //print("Insercion realizada correctamente");
     } else {
-      //print("Error en Post");
       mensaje(context, 'Error en el Alta');
     }
 

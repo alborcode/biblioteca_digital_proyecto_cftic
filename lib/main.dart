@@ -41,8 +41,8 @@ class MyApp extends StatelessWidget {
               title: 'Biblioteca Online',
               debugShowCheckedModeBanner: false,
               theme: AppTheme.miTemaClaro,
-              home: const Conexion(),
-              //home: const Inicio(),
+              //home: const Conexion(),
+              home: const Inicio(),
               routes: AppRoutes.rutas
             );
           }
@@ -54,3 +54,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+

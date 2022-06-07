@@ -10,7 +10,6 @@
 
 import 'package:flutter/material.dart';
 
-import 'package:biblioteca_digital_proyecto_cftic/theme/app_theme.dart';
 
 class BotonIconosinTexto extends StatelessWidget {
   final IconData icono;
